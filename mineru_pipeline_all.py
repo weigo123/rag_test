@@ -22,6 +22,8 @@ def parse_all_pdfs(datas_dir, output_base_dir):
         with open(pdf_path, "rb") as f:
             pdf_bytes = f.read()
         output_dir = output_base_dir / file_name
+        if output_dir.exists():
+            continue
         output_dir.mkdir(parents=True, exist_ok=True)
         do_parse(
             output_dir=str(output_dir),

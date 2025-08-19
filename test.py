@@ -1,6 +1,10 @@
+"""
+测试文件，用于测试大模型接口
+"""
 from dotenv import load_dotenv
 import os
 import openai
+from google import genai
 def encode_image_to_base64(image_path):
     import base64
     with open(image_path, "rb") as f:
@@ -8,9 +12,10 @@ def encode_image_to_base64(image_path):
         decode_data = base64_data.decode("utf-8")
         return decode_data
 
-# VLM_MODEL = "Qwen/Qwen2.5-VL-32B-Instruct"
-VLM_MODEL = "glm-4.5v"
-if __name__ == "__main__":
+VLM_MODEL = "Qwen/Qwen2.5-VL-32B-Instruct"
+# VLM_MODEL = "glm-4.5v"
+
+def test_iamge_translation()-> None:
     load_dotenv()
     # api_key = os.getenv("LOCAL_API_KEY")  
     # base_url = os.getenv("LOCAL_BASE_URL")
@@ -50,5 +55,11 @@ if __name__ == "__main__":
     )
     desc = response.choices[0].message.content
     print(desc)
+
+def test_gemini_text_embedding()->None:
+    client = genai.Client()
+
+if __name__ == "__main__":
+    pass
 
 

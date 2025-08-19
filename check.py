@@ -1,10 +1,11 @@
+"""
+检查两个文件答案之间的差异
+"""
 import json
 from collections import defaultdict
 import pandas as pd
 
-"""
-检查两个文件答案之间的差异
-"""
+
 def check(label_json_path:str, pred_json_path:str, dump:bool = False)-> pd.DataFrame:
     with open(label_json_path, "r", encoding="utf-8") as f:
         label_json = json.load(f)

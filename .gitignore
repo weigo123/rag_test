@@ -5,3 +5,5 @@ rag/
 rag/*
 datas/*
 datas/
+.vscode/
+.vscode/*
