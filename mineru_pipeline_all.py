@@ -4,6 +4,7 @@ from pathlib import Path
 import json
 from collections import defaultdict
 import asyncio
+from typing import Optional
 from image_utils.async_image_analysis import AsyncImageAnalysis
 from image_utils.prompts import get_image_analysis_prompt
 def parse_all_pdfs(datas_dir, output_base_dir):
@@ -48,7 +49,7 @@ def group_by_page(content_list):
         pages[page_idx].append(item)
     return dict(pages)
 
-def item_to_markdown(item, enable_image_caption=True, file_name=""):
+def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Optional[Path]=None):
     """
     enable_image_caption: 是否启用多模态视觉分析（图片caption补全），默认True。
     """
@@ -71,7 +72,8 @@ def item_to_markdown(item, enable_image_caption=True, file_name=""):
         captions = item.get('image_caption', [])
         caption = captions[0] if captions else ''
         img_path = item.get('img_path', '')
-        print(f"正在处理图片: {img_path}")
+        print(f"正在处理图片: file_dir={file_dir},image_path={img_path}")
+        img_path = str((file_dir / img_path).resolve())
         print(f"enable_image_caption={enable_image_caption},caption={caption},img_path={img_path},exists={os.path.exists(img_path)}")
         # 如果没有caption，且允许视觉分析，调用多模态API补全
         if enable_image_caption and not caption and img_path and os.path.exists(img_path):
@@ -121,7 +123,7 @@ def item_to_markdown(item, enable_image_caption=True, file_name=""):
     else:
         return '\n'
 
-def assemble_pages_to_markdown(pages, file_name):
+def assemble_pages_to_markdown(pages, file_name:str, file_dir: Path):
     """
     将按页面分组的内容列表转换为Markdown格式文本
     
@@ -144,7 +146,7 @@ def assemble_pages_to_markdown(pages, file_name):
     for page_idx in sorted(pages.keys()):
         md = ''
         for item in pages[page_idx]:
-            md += item_to_markdown(item, enable_image_caption=True, file_name=file_name)
+            md += item_to_markdown(item, enable_image_caption=True, file_name=file_name, file_dir=file_dir)
         page_md[page_idx] = md
     return page_md
 
@@ -170,7 +172,7 @@ def process_all_pdfs_to_page_json(input_base_dir, output_base_dir):
             content_list = json.load(f)
         pages = group_by_page(content_list)
         print(f"开始处理assemble_pages_to_markdown")
-        page_md = assemble_pages_to_markdown(pages, file_name)
+        page_md = assemble_pages_to_markdown(pages, file_name, file_dir=json_path.parent)
         output_dir = output_base_dir / file_name
         output_dir.mkdir(parents=True, exist_ok=True)
         output_json_path = output_dir / f'{file_name}_page_content.json'
