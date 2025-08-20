@@ -71,6 +71,8 @@ def item_to_markdown(item, enable_image_caption=True, file_name=""):
         captions = item.get('image_caption', [])
         caption = captions[0] if captions else ''
         img_path = item.get('img_path', '')
+        print(f"正在处理图片: {img_path}")
+        print(f"enable_image_caption={enable_image_caption},caption={caption},img_path={img_path},exists={os.path.exists(img_path)}")
         # 如果没有caption，且允许视觉分析，调用多模态API补全
         if enable_image_caption and not caption and img_path and os.path.exists(img_path):
             try:
@@ -94,6 +96,7 @@ def item_to_markdown(item, enable_image_caption=True, file_name=""):
                                                            )
                         print(prompt)
                         result = await analyzer.analyze_image(local_image_path=img_path, prompt=prompt)
+                        print(result)
                         return result.get('title') or result.get('description') or ''
                 caption = loop.run_until_complete(get_caption())
                 loop.close()
@@ -166,6 +169,7 @@ def process_all_pdfs_to_page_json(input_base_dir, output_base_dir):
         with open(json_path, 'r', encoding='utf-8') as f:
             content_list = json.load(f)
         pages = group_by_page(content_list)
+        print(f"开始处理assemble_pages_to_markdown")
         page_md = assemble_pages_to_markdown(pages, file_name)
         output_dir = output_base_dir / file_name
         output_dir.mkdir(parents=True, exist_ok=True)
