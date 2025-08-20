@@ -7,3 +7,6 @@ datas/*
 datas/
 .vscode/
 .vscode/*
+data_base_json_content/
+data_base_json_page_content/
+image_utils/__pycache__/
