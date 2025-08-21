@@ -210,6 +210,7 @@ def process_all_pdfs_to_page_json(input_base_dir, output_base_dir):
     input_base_dir = Path(input_base_dir)
     output_base_dir = Path(output_base_dir)
     pdf_dirs = [d for d in input_base_dir.iterdir() if d.is_dir()]
+    pdf_dirs = pdf_dirs[:5]
     pdf_dirs = tqdm(pdf_dirs, desc="处理文件", unit="个", total=len(pdf_dirs))
     for pdf_dir in pdf_dirs:
         file_name = pdf_dir.name
