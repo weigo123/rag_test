@@ -54,11 +54,15 @@ def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Opt
     enable_image_caption: 是否启用多模态视觉分析（图片caption补全），默认True。
     """
     # 默认API参数：硅基流动Qwen/Qwen2.5-VL-32B-Instruct
-    vision_provider = "guiji"
-    vision_model = "Qwen/Qwen2.5-VL-32B-Instruct"
-    vision_api_key = os.getenv("GUIJI_API_KEY")
-    vision_base_url = os.getenv("GUIJI_BASE_URL")
-    
+    # vision_provider = "guiji"
+    # vision_model = "Qwen/Qwen2.5-VL-32B-Instruct"
+    # vision_api_key = os.getenv("GUIJI_API_KEY")
+    # vision_base_url = os.getenv("GUIJI_BASE_URL")
+    vision_provider = "zhipu"
+    vision_model = "ZhipuAI/glm-4.5v"
+    vision_api_key = os.getenv("ZHIPU_API_KEY")
+    vision_base_url = os.getenv("ZHIPU_BASE_URL")
+                               
     if item['type'] == 'text':
         level = item.get('text_level', 0)
         text = item.get('text', '')
@@ -86,7 +90,7 @@ def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Opt
                         api_key=vision_api_key,
                         base_url=vision_base_url,
                         vision_model=vision_model,
-                        max_concurrent=7
+                        max_concurrent=8
                     ) as analyzer:
                         role_prompt = "你是一个专业的股票分析师"
                         ability_prompt = "可以熟练分析股票行业、股票财务报表和研究报告"

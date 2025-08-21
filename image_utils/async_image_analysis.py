@@ -37,7 +37,7 @@ class AsyncImageAnalysis:
             "api_key_env": "ZHIPU_API_KEY",
             "base_url_env": "ZHIPU_BASE_URL",
             "model_env": "ZHIPU_VISION_MODEL", 
-            "default_models": ["glm-4v-flash", "glm-4v"]
+            "default_models": ["glm-4.5v", "glm-4v-flash", "glm-4v"]
         },
         "volces": {
             "api_key_env": "VOLCES_API_KEY",
