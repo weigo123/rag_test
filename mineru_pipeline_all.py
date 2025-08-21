@@ -60,7 +60,7 @@ def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Opt
     # vision_api_key = os.getenv("GUIJI_API_KEY")
     # vision_base_url = os.getenv("GUIJI_BASE_URL")
     vision_provider = "zhipu"
-    vision_model = "ZhipuAI/glm-4.5v"
+    vision_model = "glm-4.5v"
     vision_api_key = os.getenv("ZHIPU_API_KEY")
     vision_base_url = os.getenv("ZHIPU_BASE_URL")
                                
@@ -82,6 +82,7 @@ def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Opt
         print(f"enable_image_caption={enable_image_caption},caption={caption},img_path={img_path},exists={os.path.exists(img_path)}")
         # 如果没有caption，且允许视觉分析，调用多模态API补全
         if enable_image_caption and img_path and os.path.exists(img_path):
+<<<<<<< HEAD
             caption = translate_image(provider=vision_provider,
                                       api_key=vision_api_key,
                                       base_url=vision_base_url,
@@ -89,6 +90,37 @@ def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Opt
                                       file_name=file_name,
                                       image_path=img_path)
             item["image_caption"] = [caption]
+=======
+            try:
+                loop = asyncio.new_event_loop()
+                asyncio.set_event_loop(loop)
+                async def get_caption():
+                    async with AsyncImageAnalysis(
+                        provider=vision_provider,
+                        api_key=vision_api_key,
+                        base_url=vision_base_url,
+                        vision_model=vision_model,
+                        max_concurrent=8
+                    ) as analyzer:
+                        role_prompt = "你是一个专业的股票分析师"
+                        ability_prompt = "可以熟练分析股票行业、股票财务报表和研究报告"
+                        prompt = get_image_analysis_prompt(title_max_length=30, 
+                                                           description_max_length=1000,
+                                                           role_prompt=role_prompt,
+                                                           ability_prompt=ability_prompt,
+                                                           file_name=file_name
+                                                           )
+                        print(prompt)
+                        result = await analyzer.analyze_image(local_image_path=img_path, prompt=prompt)
+                        print(result)
+                        return result.get('description') or result.get('title') or ''
+                caption = loop.run_until_complete(get_caption())
+                loop.close()
+                if caption:
+                    item['image_caption'] = [caption]
+            except Exception as e:
+                print(f"图片解释失败: {img_path}, {e}")
+>>>>>>> 3682900d805b4db9770832cf5d06c73a0418bb7f
         md = f"![{caption}]({img_path})\n"
         return md + "\n"
     elif item['type'] == 'table':
