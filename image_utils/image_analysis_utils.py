@@ -53,7 +53,7 @@ def extract_json_content(text: str) -> Dict[str, Any]:
     except json.JSONDecodeError:
         # 尝试从文本中提取一些信息作为描述
         fallback_description = (
-            text.strip().replace("```json", "").replace("```", "").strip()[:50]
+            text.strip().replace("```json", "").replace("```", "").strip()
         )
         return {
             "error": "无法提取JSON内容",
