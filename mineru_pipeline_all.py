@@ -213,6 +213,9 @@ def process_all_pdfs_to_page_json(input_base_dir, output_base_dir):
     pdf_dirs = pdf_dirs[:5]
     pdf_dirs = tqdm(pdf_dirs, desc="处理文件", unit="个", total=len(pdf_dirs))
     for pdf_dir in pdf_dirs:
+        label_file = output_base_dir / "SUCCESS"
+        if label_file.exists():
+            continue
         file_name = pdf_dir.name
         json_path = pdf_dir / 'auto' / f'{file_name}_content_list.json'
         if not json_path.exists():
@@ -233,6 +236,7 @@ def process_all_pdfs_to_page_json(input_base_dir, output_base_dir):
         output_json_path = output_dir / f'{file_name}_page_content.json'
         with open(output_json_path, 'w', encoding='utf-8') as f:
             json.dump(page_md, f, ensure_ascii=False, indent=2)
+            label_file.touch()
         print(f"已输出: {output_json_path}")
 
 def process_page_content_to_chunks(input_base_dir, output_json_path):
