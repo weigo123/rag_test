@@ -59,7 +59,7 @@ def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Opt
     # vision_api_key = os.getenv("GUIJI_API_KEY")
     # vision_base_url = os.getenv("GUIJI_BASE_URL")
     vision_provider = "zhipu"
-    vision_model = "ZhipuAI/glm-4.5v"
+    vision_model = "glm-4.5v"
     vision_api_key = os.getenv("ZHIPU_API_KEY")
     vision_base_url = os.getenv("ZHIPU_BASE_URL")
                                
@@ -103,7 +103,7 @@ def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Opt
                         print(prompt)
                         result = await analyzer.analyze_image(local_image_path=img_path, prompt=prompt)
                         print(result)
-                        return result.get('title') or result.get('description') or ''
+                        return result.get('description') or result.get('title') or ''
                 caption = loop.run_until_complete(get_caption())
                 loop.close()
                 if caption:
