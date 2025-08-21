@@ -96,6 +96,9 @@ def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Opt
         caption = captions[0] if captions else ''
         table_html = item.get('table_body', '')
         img_path = item.get('img_path', '')
+        print(f"正在处理图片: file_dir={file_dir},image_path={img_path}\n")
+        img_path = str((file_dir / img_path).resolve())
+        print(f"enable_image_caption={enable_image_caption},caption={caption},img_path={img_path},exists={os.path.exists(img_path)}\n")
         caption = translate_table(provider=vision_provider,
                             api_key=vision_api_key,
                             base_url=vision_base_url,
