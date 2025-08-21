@@ -6,7 +6,8 @@ from collections import defaultdict
 import asyncio
 from typing import Optional
 from image_utils.async_image_analysis import AsyncImageAnalysis
-from image_utils.prompts import get_image_analysis_prompt
+from image_utils.prompts import *
+from tqdm import tqdm
 def parse_all_pdfs(datas_dir, output_base_dir):
     """
     步骤1：解析所有PDF，输出内容到 data_base_json_content/
@@ -81,35 +82,13 @@ def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Opt
         print(f"enable_image_caption={enable_image_caption},caption={caption},img_path={img_path},exists={os.path.exists(img_path)}")
         # 如果没有caption，且允许视觉分析，调用多模态API补全
         if enable_image_caption and img_path and os.path.exists(img_path):
-            try:
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                async def get_caption():
-                    async with AsyncImageAnalysis(
-                        provider=vision_provider,
-                        api_key=vision_api_key,
-                        base_url=vision_base_url,
-                        vision_model=vision_model,
-                        max_concurrent=8
-                    ) as analyzer:
-                        role_prompt = "你是一个专业的股票分析师"
-                        ability_prompt = "可以熟练分析股票行业、股票财务报表和研究报告"
-                        prompt = get_image_analysis_prompt(title_max_length=30, 
-                                                           description_max_length=1000,
-                                                           role_prompt=role_prompt,
-                                                           ability_prompt=ability_prompt,
-                                                           file_name=file_name
-                                                           )
-                        print(prompt)
-                        result = await analyzer.analyze_image(local_image_path=img_path, prompt=prompt)
-                        print(result)
-                        return result.get('title') or result.get('description') or ''
-                caption = loop.run_until_complete(get_caption())
-                loop.close()
-                if caption:
-                    item['image_caption'] = [caption]
-            except Exception as e:
-                print(f"图片解释失败: {img_path}, {e}")
+            caption = translate_image(provider=vision_provider,
+                                      api_key=vision_api_key,
+                                      base_url=vision_base_url,
+                                      model=vision_model,
+                                      file_name=file_name,
+                                      image_path=img_path)
+            item["image_caption"] = [caption]
         md = f"![{caption}]({img_path})\n"
         return md + "\n"
     elif item['type'] == 'table':
@@ -117,15 +96,85 @@ def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Opt
         caption = captions[0] if captions else ''
         table_html = item.get('table_body', '')
         img_path = item.get('img_path', '')
+        caption = translate_table(provider=vision_provider,
+                            api_key=vision_api_key,
+                            base_url=vision_base_url,
+                            model=vision_model,
+                            file_name=file_name,
+                            image_path=img_path)
         md = ''
         if caption:
             md += f"**{caption}**\n"
         if img_path:
-            md += f"![{caption}]({img_path})\n"
+            md += f"({img_path})\n"
         md += f"{table_html}\n\n"
         return md
     else:
         return '\n'
+
+def translate_image(provider, api_key, base_url, model, file_name, 
+                    image_path):
+    caption = ""
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        async def get_caption():
+            async with AsyncImageAnalysis(
+                provider=provider,
+                api_key=api_key,
+                base_url=base_url,
+                vision_model=model,
+                max_concurrent=8
+            ) as analyzer:
+                role_prompt = "你是一个专业的股票分析师"
+                ability_prompt = "可以熟练分析股票行业、股票财务报表和研究报告"
+                prompt = get_image_analysis_prompt(title_max_length=30, 
+                                                    description_max_length=1000,
+                                                    role_prompt=role_prompt,
+                                                    ability_prompt=ability_prompt,
+                                                    file_name=file_name
+                                                    )
+                print(prompt)
+                result = await analyzer.analyze_image(local_image_path=image_path, prompt=prompt)
+                print(result)
+                return result.get('description') or result.get("title") or ''
+        caption = loop.run_until_complete(get_caption())
+        loop.close()
+    except Exception as e:
+        print(f"图片解释失败: {image_path}, {e}")
+    return caption
+
+def translate_table(provider, api_key, base_url, model, file_name, 
+                    image_path):
+    caption = ""
+    try:
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        async def get_caption():
+            async with AsyncImageAnalysis(
+                provider=provider,
+                api_key=api_key,
+                base_url=base_url,
+                vision_model=model,
+                max_concurrent=8
+            ) as analyzer:
+                role_prompt = "你是一个专业的股票分析师"
+                ability_prompt = "可以熟练分析股票行业、股票财务报表和研究报告"
+                prompt = get_table_analysis_prompt(title_max_length=30, 
+                                                    description_max_length=1000,
+                                                    role_prompt=role_prompt,
+                                                    ability_prompt=ability_prompt,
+                                                    file_name=file_name
+                                                    )
+                print(prompt)
+                result = await analyzer.analyze_image(local_image_path=image_path, prompt=prompt)
+                print(result)
+                return result.get('description') or result.get("title") or ''
+        caption = loop.run_until_complete(get_caption())
+        loop.close()
+    except Exception as e:
+        print(f"图片解释失败: {image_path}, {e}")
+    return caption
 
 def assemble_pages_to_markdown(pages, file_name:str, file_dir: Path):
     """
@@ -161,6 +210,7 @@ def process_all_pdfs_to_page_json(input_base_dir, output_base_dir):
     input_base_dir = Path(input_base_dir)
     output_base_dir = Path(output_base_dir)
     pdf_dirs = [d for d in input_base_dir.iterdir() if d.is_dir()]
+    pdf_dirs = tqdm(pdf_dirs, desc="处理文件", unit="个", total=len(pdf_dirs))
     for pdf_dir in pdf_dirs:
         file_name = pdf_dir.name
         json_path = pdf_dir / 'auto' / f'{file_name}_content_list.json'
