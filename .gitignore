@@ -10,3 +10,4 @@ datas/
 data_base_json_content/
 data_base_json_page_content/
 image_utils/__pycache__/
+image_utils/.ipynb_checkpoints/

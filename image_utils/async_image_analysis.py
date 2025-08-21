@@ -12,8 +12,8 @@ from PIL import Image
 from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
-from prompts import get_image_analysis_prompt
-from image_analysis_utils import extract_json_content, image_to_base64_async
+from .prompts import get_image_analysis_prompt
+from .image_analysis_utils import extract_json_content, image_to_base64_async
 load_dotenv()
 
 

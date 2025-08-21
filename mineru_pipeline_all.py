@@ -76,7 +76,7 @@ def item_to_markdown(item, enable_image_caption=True, file_name="", file_dir:Opt
         img_path = str((file_dir / img_path).resolve())
         print(f"enable_image_caption={enable_image_caption},caption={caption},img_path={img_path},exists={os.path.exists(img_path)}")
         # 如果没有caption，且允许视觉分析，调用多模态API补全
-        if enable_image_caption and not caption and img_path and os.path.exists(img_path):
+        if enable_image_caption and img_path and os.path.exists(img_path):
             try:
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
