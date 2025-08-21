@@ -23,7 +23,7 @@ def extract_json_content(text: str) -> Dict[str, Any]:
     """
     if not text:
         return {"error": "Empty response", "title": "", "description": ""}
-
+    text = text.replace("\n", "").replace("<|begin_of_box|>", "").replace("<|end_of_box|>", "")
     # 尝试寻找JSON的开始和结束位置
     json_start = text.find("{")
     json_end = text.rfind("}")

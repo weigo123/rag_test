@@ -80,9 +80,21 @@ def test_table_translation(filename:str, image_path:str, parse_text:str)-> None:
     #         只返回JSON，不要有其他说明文字，不能有尖括号类似的文字。
     # """
     user_prompt = f"""
-        这是一张有关上市公司的表格的图片，请详细描述这张图片的信息，图片来自上市公司的研究报告，图片所属文件名称为<{filename}>
-        详细描述图片中的关键信息点
+        请你是一个专业的股票分析师,可以熟练分析股票行业、股票财务报表和研究报告,图片来自中恒电气-公司研究报告-HVDC方案领头羊AI浪潮下迎新机-25071124页,这张图片来自一张表格，分析表格并给出30字以上的标题、1000字以上的图片描述，使用JSON格式输出。
+
+        分析以下方面:
+        1. 主要内容/主题
+        2. 包含的信息点
+
+        输出格式必须严格为:
+        {{
+        "title": "标题(30字以内)",
+        "description": "详细描述(1000字以内)"
+        }}
+
+        只返回JSON，不要有其他说明文字。
         """
+    print(user_prompt)
     response = client.chat.completions.create(
         model=VLM_MODEL,
         messages=[
