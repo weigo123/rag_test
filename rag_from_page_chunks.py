@@ -99,7 +99,7 @@ class SimpleRAG:
         chunks = self.vector_store.search(q_emb, top_k)
         # 拼接检索内容，带上元数据
         context = "\n".join([
-            f"[文件名]{c['metadata']['file_name']} [页码]{c['metadata']['page']}\n{c['content']}" for c in chunks
+            f"[文件名]{c['metadata']['filename']} [页码]{c['metadata']['page']}\n{c['content']}" for c in chunks
         ])
         # 明确要求输出JSON格式 answer/page/filename
         prompt = (
@@ -128,15 +128,15 @@ class SimpleRAG:
                     page = j.get('page', '')
                 else:
                     answer = raw
-                    filename = chunks[0]['metadata']['file_name'] if chunks else ''
+                    filename = chunks[0]['metadata']['filename'] if chunks else ''
                     page = chunks[0]['metadata']['page'] if chunks else ''
             except Exception:
                 answer = raw
-                filename = chunks[0]['metadata']['file_name'] if chunks else ''
+                filename = chunks[0]['metadata']['filename'] if chunks else ''
                 page = chunks[0]['metadata']['page'] if chunks else ''
         else:
             answer = raw
-            filename = chunks[0]['metadata']['file_name'] if chunks else ''
+            filename = chunks[0]['metadata']['filename'] if chunks else ''
             page = chunks[0]['metadata']['page'] if chunks else ''
         # 结构化输出
         return {
