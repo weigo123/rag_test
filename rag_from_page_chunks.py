@@ -65,7 +65,7 @@ class SimpleVectorStore:
         return [self.chunks[i] for i in idxs]
 
 class SimpleRAG:
-    def __init__(self, chunk_json_path: str, model_path: str = None, batch_size: int = 32):
+    def __init__(self, chunk_json_path: str, model_path: str = None, batch_size: int = 1):
         self.loader = PageChunkLoader(chunk_json_path)
         self.embedding_model = EmbeddingModel(batch_size=batch_size)
         self.vector_store = SimpleVectorStore()
@@ -150,7 +150,7 @@ class SimpleRAG:
 def call_llm_api_with_retry(client:OpenAI, prompt:str, model:str, 
                             max_retry:int=3, temperature:float=0.2, max_tokens:int=1024)->ChatCompletion:
     from openai import RateLimitError, APITimeoutError
-    from time import time
+    import time
     retry_count = 0
     while retry_count < max_retry:
         try:
@@ -172,6 +172,10 @@ def call_llm_api_with_retry(client:OpenAI, prompt:str, model:str,
             retry_count += 1
             print(f"LLM API调用超时，错误信息：{e}，等待10秒后重试（第{retry_count}次）...")
             time.sleep(10)
+        except openai.APIStatusError as e:
+            prompt = prompt[:len(prompt)-500]
+            print(f"LLM API调用超长，错误信息：{e}，等待10秒后重试（第{retry_count}次）...")
+            time.sleep(10)
         except Exception as e:
             retry_count += 1
             print(f"LLM调用unknown error: {e}")
@@ -181,11 +185,11 @@ def call_llm_api_with_retry(client:OpenAI, prompt:str, model:str,
 if __name__ == '__main__':
     # 路径可根据实际情况调整
     chunk_json_path = "./all_pdf_page_chunks.json"
-    rag = SimpleRAG(chunk_json_path)
+    rag = SimpleRAG(chunk_json_path, batch_size=1)
     rag.setup()
 
     # 控制测试时读取的题目数量，默认只随机抽取10个，实际跑全部时设为None
-    TEST_SAMPLE_NUM = 10  # 设置为None则全部跑
+    TEST_SAMPLE_NUM = None  # 设置为None则全部跑
     FILL_UNANSWERED = True  # 未回答的也输出默认内容
 
     # 批量评测脚本：读取测试集，检索+大模型生成，输出结构化结果

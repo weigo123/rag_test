@@ -31,7 +31,7 @@ from tqdm import tqdm
 
 def batch_get_embeddings(
     texts: List[str],
-    batch_size: int = 64,
+    batch_size: int = 1,
     api_key: str = None,
     base_url: str = None,
     embedding_model: str = None
@@ -56,7 +56,7 @@ def batch_get_embeddings(
     if total > 1:
         iterator = tqdm(iterator, desc="Embedding", unit="batch")
     import time
-    from openai import RateLimitError
+    from openai import RateLimitError, APIStatusError
     for i in iterator:
         batch_texts = texts[i:i + batch_size]
         retry_count = 0
@@ -73,6 +73,18 @@ def batch_get_embeddings(
                 retry_count += 1
                 print(f"RateLimitError: {e}. 等待10秒后重试（第{retry_count}次）...")
                 time.sleep(10)
+            except APIStatusError as e:
+                retry_count += 1
+                print(f"LLM API调用失败，错误信息：{e}，等待10秒后重试（第{retry_count}次）...")
+                if retry_count > 0:
+                    break
+                print(batch_texts[0])
+                time.sleep(10)
+            except openai.BadRequestError as e:
+                retry_count += 1
+                print(f"LLM API调用失败，错误信息：{e}，等待10秒后重试（第{retry_count}次）...")
+                print(batch_texts[0])
+                time.sleep(10)
     return all_embeddings
 
 
@@ -82,7 +94,7 @@ def get_text_embedding(
     api_key: str = None, # pyright: ignore[reportArgumentType]
     base_url: str = None, # type: ignore
     embedding_model: str = None,
-    batch_size: int = 64
+    batch_size: int = 1
 ) -> List[List[float]]:
     """
     获取文本的嵌入向量，支持批次处理，保持输出顺序与输入顺序一致

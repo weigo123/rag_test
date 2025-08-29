@@ -213,13 +213,14 @@ def process_all_pdfs_to_page_json(input_base_dir, output_base_dir):
     input_base_dir = Path(input_base_dir)
     output_base_dir = Path(output_base_dir)
     pdf_dirs = [d for d in input_base_dir.iterdir() if d.is_dir()]
-    pdf_dirs = pdf_dirs[:5]
+    pdf_dirs = pdf_dirs
     pdf_dirs = tqdm(pdf_dirs, desc="处理文件", unit="个", total=len(pdf_dirs))
     for pdf_dir in pdf_dirs:
-        label_file = output_base_dir / "SUCCESS"
+        file_name = pdf_dir.name
+        output_dir = output_base_dir / file_name
+        label_file = output_dir / "SUCCESS"
         if label_file.exists():
             continue
-        file_name = pdf_dir.name
         json_path = pdf_dir / 'auto' / f'{file_name}_content_list.json'
         if not json_path.exists():
             sub_dir = pdf_dir / file_name
@@ -234,7 +235,6 @@ def process_all_pdfs_to_page_json(input_base_dir, output_base_dir):
         pages = group_by_page(content_list)
         print(f"开始处理assemble_pages_to_markdown")
         page_md = assemble_pages_to_markdown(pages, file_name, file_dir=json_path.parent)
-        output_dir = output_base_dir / file_name
         output_dir.mkdir(parents=True, exist_ok=True)
         output_json_path = output_dir / f'{file_name}_page_content.json'
         with open(output_json_path, 'w', encoding='utf-8') as f:
